@@ -16,7 +16,6 @@ def _load_server_with_mock(mock_run_func):
     """
     dummy_orchestrator = types.SimpleNamespace(run_nobel_pipeline=mock_run_func)
     with patch.dict('sys.modules', {'src.mcp.orchestrator': dummy_orchestrator}):
-        # 保险：若之前已导入过 server，则删除以强制重新导入
         if 'src.mcp.server' in importlib.sys.modules:
             del importlib.sys.modules['src.mcp.server']
         return importlib.import_module('src.mcp.server')
@@ -46,12 +45,10 @@ class TestMcpServer(unittest.TestCase):
             payload = {"theme": "测试主题", "thresholds_path": "artifacts/nobel/eval_thresholds.json"}
             result = mcp_server.orchestrate_all(payload)
 
-            # 顶层契约
             self.assertEqual(result.get("schema_version"), "1.0")
             self.assertIsInstance(result.get("summary"), dict)
             self.assertIsInstance(result.get("artifacts"), dict)
             self.assertIsInstance(result.get("errors"), list)
-            # 成功路径
             self.assertTrue(result["summary"].get("ok"))
             self.assertIn("draft_published", result["artifacts"])
             self.assertIn("draft_md_agent", result["artifacts"])
@@ -63,15 +60,18 @@ class TestMcpServer(unittest.TestCase):
                 pass
 
     def test_orchestrate_all_pipeline_exception(self):
-        mcp_server = _load_server_with_mock(lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+        # 构造一个立即抛出异常的假管线
+        def _raise():
+            raise RuntimeError("boom")
+        mcp_server = _load_server_with_mock(_raise)
         result = mcp_server.orchestrate_all({})
         self.assertEqual(result.get("schema_version"), "1.0")
         self.assertEqual(result.get("summary"), {})
         self.assertEqual(result.get("artifacts"), {})
-        self.assertIsInstance(result.get("errors"), list)
         self.assertTrue(any(e.get("code") == "E_ORCHESTRATE_FAIL" for e in result["errors"]))
 
     def test_orchestrate_all_load_log_fail(self):
+        # 返回一个不存在的路径，触发 E_LOAD_LOG_FAIL
         mcp_server = _load_server_with_mock(lambda: "/nonexistent/path/run_log.json")
         result = mcp_server.orchestrate_all({})
         self.assertEqual(result.get("schema_version"), "1.0")
