@@ -1,0 +1,23 @@
+{
+  "model": "dashscope:qwen3-max",
+  "model_source": "agent",
+  "max_tokens": null,
+  "max_tokens_source": "env_invalid",
+  "temperature": 0.2,
+  "temperature_source": "env",
+  "theme": "诺贝尔奖",
+  "theme_source": "env",
+  "eval_thresholds_source": "file",
+  "eval_thresholds_path": "artifacts/nobel/eval_thresholds.json",
+  "env": {
+    "NOBEL_MODEL": null,
+    "NOBEL_LLM_MAX_TOKENS": "",
+    "NOBEL_TEMPERATURE": null,
+    "NOBEL_THEME": "诺贝尔奖"
+  },
+  "secrets_present": {
+    "OPENAI_API_KEY": false,
+    "ANTHROPIC_API_KEY": false,
+    "OPENROUTER_API_KEY": false
+  }
+}

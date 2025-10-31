@@ -1,0 +1,54 @@
+{
+  "fetch": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "duration_s": 1.22,
+    "rows": 1114,
+    "run_dir": "artifacts/nobel/runs/1761717337",
+    "csv_src": "artifacts/nobel/runs/1761717337/laureates_prizes.csv",
+    "csv_default": "artifacts/nobel/laureates_prizes.csv"
+  },
+  "analysis": {
+    "returncode": 0,
+    "stdout": "Charts saved to artifacts/nobel/runs/1761717337/figures and draft.md created at artifacts/nobel/runs/1761717337/draft.md\n",
+    "stderr": "",
+    "duration_s": 1.01
+  },
+  "eval": {
+    "returncode": 0,
+    "stdout": "Eval complete. Report saved -> artifacts/nobel/runs/1761717337/eval_1761717340.json\n",
+    "stderr": "",
+    "duration_s": 0.63,
+    "report_path": "artifacts/nobel/runs/1761717337/eval_1761717340.json"
+  },
+  "write": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "duration_s": 0.01,
+    "draft_md": "artifacts/nobel/runs/1761717337/draft.md",
+    "metrics": {
+      "laureates_unique": 1018,
+      "year_min": 1901,
+      "year_max": 2025,
+      "top_country_name": "USA",
+      "top_country_count": 325,
+      "top_category_name": "physics",
+      "top_category_count": 259
+    }
+  },
+  "summary": {
+    "ok": true,
+    "total_duration_s": 2.86,
+    "artifacts": {
+      "csv": "artifacts/nobel/runs/1761717337/laureates_prizes.csv",
+      "figures_dir": "artifacts/nobel/runs/1761717337/figures",
+      "draft_md_analysis": "artifacts/nobel/runs/1761717337/draft.md",
+      "draft_md_agent": "artifacts/nobel/runs/1761717337/draft.md",
+      "eval_report": "artifacts/nobel/runs/1761717337/eval_1761717340.json"
+    },
+    "run_id": "1761717337",
+    "agent_run_dir": "artifacts/nobel/runs/1761717337"
+  }
+}

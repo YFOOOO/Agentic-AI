@@ -1,0 +1,111 @@
+{
+  "fetch": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "duration_s": 1.16,
+    "rows": 1114,
+    "run_dir": "artifacts/nobel/runs/1761728136",
+    "csv_src": "artifacts/nobel/runs/1761728136/laureates_prizes.csv",
+    "csv_default": "artifacts/nobel/laureates_prizes.csv"
+  },
+  "analysis": {
+    "returncode": 0,
+    "stdout": "Charts saved to artifacts/nobel/runs/1761728136/figures and draft.md created at artifacts/nobel/runs/1761728136/draft.md\n",
+    "stderr": "",
+    "duration_s": 1.09
+  },
+  "eval": {
+    "returncode": 0,
+    "stdout": "Eval complete. Report saved -> artifacts/nobel/runs/1761728136/eval_1761728139.json\n",
+    "stderr": "",
+    "duration_s": 0.66,
+    "report_path": "artifacts/nobel/runs/1761728136/eval_1761728139.json",
+    "thresholds_path": "artifacts/nobel/eval_thresholds.json"
+  },
+  "write": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "duration_s": 26.63,
+    "draft_md": "artifacts/nobel/runs/1761728136/draft_agent.md",
+    "metrics": {
+      "rows": 1114,
+      "laureates_unique": 1018,
+      "year_min": 1901,
+      "year_max": 2025,
+      "top_country_name": "USA",
+      "top_country_count": 325,
+      "top_category_name": "physics",
+      "top_category_count": 259
+    },
+    "theme": "诺贝尔奖",
+    "theme_source": "default",
+    "llm_used": true,
+    "llm_enabled": true,
+    "llm_model": "dashscope:qwen3-max",
+    "llm_model_source": "agent",
+    "llm_provider": "dashscope",
+    "llm_error": null,
+    "llm_temperature": 0.2,
+    "llm_temperature_source": "adapter_default",
+    "llm_max_tokens": null,
+    "llm_max_tokens_source": null
+  },
+  "summary": {
+    "ok": true,
+    "total_duration_s": 30.44,
+    "artifacts": {
+      "csv": "artifacts/nobel/runs/1761728136/laureates_prizes.csv",
+      "figures_dir": "artifacts/nobel/runs/1761728136/figures",
+      "draft_md_analysis": "artifacts/nobel/runs/1761728136/draft.md",
+      "draft_md_agent": "artifacts/nobel/runs/1761728136/draft_agent.md",
+      "prompt_txt_agent": "artifacts/nobel/runs/1761728136/prompt.txt",
+      "eval_report": "artifacts/nobel/runs/1761728136/eval_1761728139.json",
+      "eval_report_agent": "artifacts/nobel/runs/1761728136/eval_agent_1761728166.json",
+      "draft_published": "artifacts/nobel/draft.md",
+      "bundle_zip": "/Users/yf/Documents/Github_repository/Agentic-AI/artifacts/nobel/run_1761728136.zip",
+      "run_log_global": "artifacts/nobel/run_log_1761728166.json",
+      "run_log_run_dir": "artifacts/nobel/runs/1761728136/run_log.json"
+    },
+    "best_draft": {
+      "type": "analysis",
+      "path": "artifacts/nobel/runs/1761728136/draft.md",
+      "pass_count": 6
+    },
+    "eval_pass": {
+      "analysis": 6,
+      "agent": 6
+    },
+    "run_id": "1761728136",
+    "agent_run_dir": "artifacts/nobel/runs/1761728136",
+    "env": {
+      "aisuite_path_env": "",
+      "aisuite_module_file": "/Users/yf/Documents/Github_repository/AI-Trial/Agentic AI/Examples/Third_party package(clone)/aisuite/aisuite/__init__.py",
+      "nobel_llm_temperature_env": "",
+      "nobel_llm_model_env": "",
+      "nobel_theme_env": ""
+    }
+  },
+  "eval_agent": {
+    "returncode": 0,
+    "stdout": "Eval complete. Report saved -> artifacts/nobel/runs/1761728136/eval_agent_1761728166.json\n",
+    "stderr": "",
+    "duration_s": 0.89,
+    "report_path": "artifacts/nobel/runs/1761728136/eval_agent_1761728166.json",
+    "thresholds_path": "artifacts/nobel/eval_thresholds.json"
+  },
+  "publish": {
+    "returncode": 0,
+    "source_type": "analysis",
+    "source_path": "artifacts/nobel/runs/1761728136/draft.md",
+    "target_path": "artifacts/nobel/draft.md",
+    "duration_s": 0.0
+  },
+  "bundle": {
+    "returncode": 0,
+    "path": "/Users/yf/Documents/Github_repository/Agentic-AI/artifacts/nobel/run_1761728136.zip",
+    "root_dir": "artifacts/nobel/runs/1761728136",
+    "duration_s": 0.01
+  }
+}

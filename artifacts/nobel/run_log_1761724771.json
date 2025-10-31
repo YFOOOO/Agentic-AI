@@ -1,0 +1,103 @@
+{
+  "fetch": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "duration_s": 1.86,
+    "rows": 1114,
+    "run_dir": "artifacts/nobel/runs/1761724753",
+    "csv_src": "artifacts/nobel/runs/1761724753/laureates_prizes.csv",
+    "csv_default": "artifacts/nobel/laureates_prizes.csv"
+  },
+  "analysis": {
+    "returncode": 0,
+    "stdout": "Charts saved to artifacts/nobel/runs/1761724753/figures and draft.md created at artifacts/nobel/runs/1761724753/draft.md\n",
+    "stderr": "",
+    "duration_s": 0.96
+  },
+  "eval": {
+    "returncode": 0,
+    "stdout": "Eval complete. Report saved -> artifacts/nobel/runs/1761724753/eval_1761724756.json\n",
+    "stderr": "",
+    "duration_s": 0.61,
+    "report_path": "artifacts/nobel/runs/1761724753/eval_1761724756.json",
+    "thresholds_path": "artifacts/nobel/eval_thresholds.json"
+  },
+  "write": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "duration_s": 14.15,
+    "draft_md": "artifacts/nobel/runs/1761724753/draft_agent.md",
+    "metrics": {
+      "rows": 1114,
+      "laureates_unique": 1018,
+      "year_min": 1901,
+      "year_max": 2025,
+      "top_country_name": "USA",
+      "top_country_count": 325,
+      "top_category_name": "physics",
+      "top_category_count": 259
+    },
+    "theme": "诺贝尔奖",
+    "llm_used": true,
+    "llm_enabled": true,
+    "llm_model": "dashscope:qwen3-max",
+    "llm_provider": "dashscope",
+    "llm_error": null,
+    "llm_temperature": 0.15,
+    "llm_temperature_source": "env"
+  },
+  "summary": {
+    "ok": true,
+    "total_duration_s": 18.28,
+    "artifacts": {
+      "csv": "artifacts/nobel/runs/1761724753/laureates_prizes.csv",
+      "figures_dir": "artifacts/nobel/runs/1761724753/figures",
+      "draft_md_analysis": "artifacts/nobel/runs/1761724753/draft.md",
+      "draft_md_agent": "artifacts/nobel/runs/1761724753/draft_agent.md",
+      "eval_report": "artifacts/nobel/runs/1761724753/eval_1761724756.json",
+      "eval_report_agent": "artifacts/nobel/runs/1761724753/eval_agent_1761724771.json",
+      "draft_published": "artifacts/nobel/draft.md",
+      "bundle_zip": "/Users/yf/Documents/Github_repository/Agentic-AI/artifacts/nobel/run_1761724753.zip",
+      "run_log_global": "artifacts/nobel/run_log_1761724771.json",
+      "run_log_run_dir": "artifacts/nobel/runs/1761724753/run_log.json"
+    },
+    "best_draft": {
+      "type": "analysis",
+      "path": "artifacts/nobel/runs/1761724753/draft.md",
+      "pass_count": 6
+    },
+    "run_id": "1761724753",
+    "agent_run_dir": "artifacts/nobel/runs/1761724753",
+    "write_llm_used": true,
+    "write_llm_enabled": true,
+    "write_llm_model": "dashscope:qwen3-max",
+    "write_llm_provider": "dashscope",
+    "write_llm_error": null,
+    "write_llm_temperature": 0.15,
+    "write_llm_temperature_source": "env",
+    "write_theme": "诺贝尔奖"
+  },
+  "eval_agent": {
+    "returncode": 0,
+    "stdout": "Eval complete. Report saved -> artifacts/nobel/runs/1761724753/eval_agent_1761724771.json\n",
+    "stderr": "",
+    "duration_s": 0.68,
+    "report_path": "artifacts/nobel/runs/1761724753/eval_agent_1761724771.json",
+    "thresholds_path": "artifacts/nobel/eval_thresholds.json"
+  },
+  "publish": {
+    "returncode": 0,
+    "source_type": "analysis",
+    "source_path": "artifacts/nobel/runs/1761724753/draft.md",
+    "target_path": "artifacts/nobel/draft.md",
+    "duration_s": 0.0
+  },
+  "bundle": {
+    "returncode": 0,
+    "path": "/Users/yf/Documents/Github_repository/Agentic-AI/artifacts/nobel/run_1761724753.zip",
+    "root_dir": "artifacts/nobel/runs/1761724753",
+    "duration_s": 0.01
+  }
+}

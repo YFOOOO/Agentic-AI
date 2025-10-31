@@ -1,0 +1,46 @@
+{
+  "timestamp": 1761721661,
+  "checks": {
+    "csv_exists": true,
+    "fig_dir_exists": true,
+    "draft_exists": true,
+    "fig_top_countries.html_exists": true,
+    "fig_yearly_trend.html_exists": true,
+    "fig_category_stacked.html_exists": true
+  },
+  "metrics": {
+    "rows": 1114,
+    "laureates_unique": 1018,
+    "year_missing_rate": 0.0,
+    "category_missing_rate": 0.0,
+    "bornCountry_missing_rate": 0.0323,
+    "year_min": 1901,
+    "year_max": 2025,
+    "top_country_name": "USA",
+    "top_country_count": 325
+  },
+  "rubric": {
+    "data_volume_ok": true,
+    "year_missing_ok": true,
+    "category_missing_ok": true,
+    "bornCountry_missing_ok": true,
+    "figures_ok": true,
+    "draft_ok": true
+  },
+  "thresholds": {
+    "min_rows": 900,
+    "max_missing_rate": 0.6
+  },
+  "status_ok": true,
+  "notes": [],
+  "artifacts": {
+    "csv": "artifacts/nobel/runs/1761721658/laureates_prizes.csv",
+    "figures_dir": "artifacts/nobel/runs/1761721658/figures",
+    "expected_figures": [
+      "top_countries.html",
+      "yearly_trend.html",
+      "category_stacked.html"
+    ],
+    "draft_md": "artifacts/nobel/runs/1761721658/draft.md"
+  }
+}

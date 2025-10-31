@@ -1,0 +1,17 @@
+=== Run Summary ===
+Status: OK
+Total duration: 30.44s
+LLM used: True (enabled=True)
+Provider: dashscope
+Model: dashscope:qwen3-max
+Model source: agent
+Temperature: 0.2
+Temperature source: adapter_default
+Max tokens: (not set)
+Prompt: artifacts/nobel/runs/1761728136/prompt.txt
+Prompt title: # 诺贝尔奖 数据洞察草稿
+Published draft: artifacts/nobel/draft.md
+Bundle: /Users/yf/Documents/Github_repository/Agentic-AI/artifacts/nobel/run_1761728136.zip
+Best draft: analysis (pass_count=6)
+Best draft path: artifacts/nobel/runs/1761728136/draft.md
+====================
