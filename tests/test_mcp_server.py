@@ -6,8 +6,6 @@ import types
 import importlib
 from unittest.mock import patch
 
-import src.mcp.server as mcp_server
-
 
 def _load_server_with_mock(mock_run_func):
     """
