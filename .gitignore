@@ -223,3 +223,149 @@ enhanced_figures/
 temp/
 tmp/
 .temp/
+
+# ===== SENSITIVE DATA PROTECTION =====
+# Environment configuration files (all variants)
+.env*
+!.env.example
+!.env.template
+.envrc*
+
+# API Keys and credentials
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+api_keys/
+credentials/
+secrets/
+.secrets/
+
+# Local configuration files
+config.local.*
+*config.local*
+local_config.*
+.local/
+user_config.*
+
+# Encrypted data and key storage
+*.encrypted
+*.enc
+keystore/
+.keystore/
+vault/
+.vault/
+
+# Authentication tokens and sessions
+*.token
+*.jwt
+.auth/
+session_*
+auth_cache/
+
+# Database files with potential sensitive data
+*.db
+*.sqlite
+*.sqlite3
+local.db*
+
+# Log files that might contain sensitive information
+*.log
+logs/
+.logs/
+debug.log*
+error.log*
+access.log*
+api.log*
+
+# Cache directories that might store sensitive data
+.cache/
+cache/
+.api_cache/
+.model_cache/
+.llm_cache/
+
+# Backup files that might contain sensitive data
+*.bak
+*.backup
+*.old
+*~
+.backup/
+backups/
+
+# IDE and editor specific files with potential sensitive data
+.vscode/settings.json
+.vscode/launch.json
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/shelf/
+
+# OS specific files that might contain metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Development and testing artifacts with potential sensitive data
+test_data/
+test_results/
+.test_cache/
+mock_data/
+sample_data/
+dev_data/
+
+# AI/ML model files and data (might contain training data)
+*.model
+*.pkl
+*.pickle
+models/
+checkpoints/
+.models/
+
+# Jupyter notebook checkpoints and outputs
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Local development servers and processes
+.pid
+*.pid
+.sock
+*.sock
+
+# Package manager lock files with potential version vulnerabilities
+# (uncomment if you want to ignore them)
+# package-lock.json
+# yarn.lock
+# Pipfile.lock
+
+# ===== PROJECT SPECIFIC SENSITIVE DATA =====
+# Local aisuite installation path configurations
+aisuite_local/
+.aisuite_path
+
+# MCP server runtime data
+mcp_runtime/
+.mcp_state/
+server_state.json
+
+# Agent conversation histories (might contain sensitive prompts)
+conversation_history/
+chat_logs/
+agent_logs/
+
+# Evaluation results with potential sensitive data
+eval_results/
+evaluation_data/
+benchmark_data/
+
+# User-specific artifacts and outputs
+user_artifacts/
+personal_outputs/
+custom_templates/

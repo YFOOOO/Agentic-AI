@@ -4,6 +4,7 @@ import time
 import json
 import re
 import subprocess
+import signal  # 添加signal模块用于超时处理
 from pathlib import Path
 import argparse
 
@@ -16,6 +17,22 @@ import shutil
 from src.agents.literature_agent import LiteratureAgent
 from src.agents.writing_agent import WritingAgent
 from dotenv import load_dotenv
+
+# 导入错误处理框架
+try:
+    from src.mcp.exceptions import (
+        ErrorHandler, ConfigurationError, LLMError, 
+        AgentError, FileIOError, ValidationError,
+        DataProcessingError, handle_mcp_error
+    )
+    from datetime import datetime  # 添加datetime导入
+    # 创建全局错误处理器
+    orchestrator_error_handler = ErrorHandler("orchestrator")
+    ERROR_HANDLING_AVAILABLE = True
+except ImportError:
+    # 如果错误处理模块不可用，使用基础错误处理
+    ERROR_HANDLING_AVAILABLE = False
+    orchestrator_error_handler = None
 
 def get_llm_client_from_env():
     import os
@@ -34,20 +51,59 @@ def get_llm_client_from_env():
     except Exception:
         return None
 
-    client = ai.Client()
+    # 验证API Key配置
+    api_keys_available = {
+        "dashscope": os.environ.get("DASHSCOPE_API_KEY"),
+        "deepseek": os.environ.get("DEEPSEEK_API_KEY"),
+        "openai": os.environ.get("OPENAI_API_KEY"),
+        "anthropic": os.environ.get("ANTHROPIC_API_KEY")
+    }
+    
+    # 过滤出有效的API Key
+    valid_providers = {k: v for k, v in api_keys_available.items() if v}
+    
+    if not valid_providers:
+        # 没有有效的API Key，返回None
+        return None
+
+    try:
+        client = ai.Client()
+    except Exception:
+        return None
 
     # 选择模型：优先使用 NOBEL_LLM_MODEL；否则根据已配置的 API Key 推断默认 provider:model
     default_model = os.environ.get("NOBEL_LLM_MODEL")
     if not default_model:
-        if os.environ.get("DASHSCOPE_API_KEY"):
+        # 按优先级选择默认模型
+        if "dashscope" in valid_providers:
             default_model = "dashscope:qwen3-max"      # Qwen（DashScope）
-        elif os.environ.get("DEEPSEEK_API_KEY"):
+        elif "deepseek" in valid_providers:
             default_model = "deepseek:deepseek-chat"   # DeepSeek
+        elif "openai" in valid_providers:
+            default_model = "openai:gpt-4"             # OpenAI GPT-4
+        elif "anthropic" in valid_providers:
+            default_model = "anthropic:claude-3-sonnet" # Anthropic Claude
+    
+    # 验证选择的模型是否有对应的API Key
+    if default_model:
+        provider = default_model.split(":")[0]
+        if provider not in valid_providers:
+            # 如果指定的provider没有API Key，选择第一个可用的
+            first_provider = next(iter(valid_providers.keys()))
+            if first_provider == "dashscope":
+                default_model = "dashscope:qwen3-max"
+            elif first_provider == "deepseek":
+                default_model = "deepseek:deepseek-chat"
+            elif first_provider == "openai":
+                default_model = "openai:gpt-4"
+            elif first_provider == "anthropic":
+                default_model = "anthropic:claude-3-sonnet"
 
     class AisuiteAdapter:
-        def __init__(self, client, default_model=None):
+        def __init__(self, client, default_model=None, valid_providers=None):
             self.client = client
             self.default_model = default_model
+            self.valid_providers = valid_providers or {}
             # 读取温度配置（默认 0.2）
             try:
                 self.temperature = float(os.environ.get("NOBEL_LLM_TEMPERATURE", "0.2"))
@@ -61,44 +117,127 @@ def get_llm_client_from_env():
                 self.max_tokens = None
             # 新增：保存最近一次错误信息
             self.last_error = None
+            # 新增：超时配置
+            self.timeout = 30  # 30秒超时
 
         def generate(self, prompt: str, model: str = None) -> str:
             use_model = model or self.default_model
             if not use_model:
+                self.last_error = "No model specified and no default model available"
                 return ""
+            
+            # 验证模型的provider是否有API Key
+            provider = use_model.split(":")[0]
+            if provider not in self.valid_providers:
+                self.last_error = f"No API key available for provider: {provider}"
+                return ""
+                
             messages = [{"role": "user", "content": prompt}]
-            try:
-                # 成功调用前清空错误
-                self.last_error = None
-                # 新增：仅在配置存在时传入 max_tokens
-                kwargs = {
-                    "model": use_model,
-                    "messages": messages,
-                    "temperature": self.temperature,
-                }
-                if self.max_tokens is not None:
-                    kwargs["max_tokens"] = self.max_tokens
-                resp = self.client.chat.completions.create(**kwargs)
-                choices = getattr(resp, "choices", [])
-                if choices:
-                    msg = getattr(choices[0], "message", None)
-                    content = getattr(msg, "content", None) if msg else None
-                    if isinstance(content, str):
-                        return content
-                    if isinstance(content, list):
-                        parts = []
-                        for c in content:
-                            if isinstance(c, dict) and "text" in c:
-                                parts.append(c["text"])
-                        if parts:
-                            return "\n".join(parts)
-                return ""
-            except Exception as e:
-                # 新增：记录错误并返回空字符串
-                self.last_error = str(e)
-                return ""
+            
+            # 实现重试机制
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    # 成功调用前清空错误
+                    self.last_error = None
+                    # 新增：仅在配置存在时传入 max_tokens
+                    kwargs = {
+                        "model": use_model,
+                        "messages": messages,
+                        "temperature": self.temperature,
+                    }
+                    if self.max_tokens is not None:
+                        kwargs["max_tokens"] = self.max_tokens
+                    
+                    # 添加超时处理
+                    import signal
+                    
+                    def timeout_handler(signum, frame):
+                        raise TimeoutError(f"LLM call timed out after {self.timeout} seconds")
+                    
+                    # 设置超时信号（仅在Unix系统上）
+                    if hasattr(signal, 'SIGALRM'):
+                        signal.signal(signal.SIGALRM, timeout_handler)
+                        signal.alarm(self.timeout)
+                    
+                    try:
+                        resp = self.client.chat.completions.create(**kwargs)
+                    finally:
+                        # 取消超时信号
+                        if hasattr(signal, 'SIGALRM'):
+                            signal.alarm(0)
+                    
+                    choices = getattr(resp, "choices", [])
+                    if choices:
+                        msg = getattr(choices[0], "message", None)
+                        content = getattr(msg, "content", None) if msg else None
+                        if isinstance(content, str) and content.strip():
+                            return content
+                        if isinstance(content, list):
+                            parts = []
+                            for c in content:
+                                if isinstance(c, dict) and "text" in c:
+                                    parts.append(c["text"])
+                            if parts:
+                                return "\n".join(parts)
+                    
+                    # 如果没有有效内容，记录错误
+                    self.last_error = f"Empty or invalid response from {use_model}"
+                    
+                except TimeoutError as e:
+                    self.last_error = str(e)
+                    if attempt < max_retries - 1:
+                        time.sleep(2 ** attempt)  # 指数退避
+                        continue
+                    
+                except Exception as e:
+                    error_msg = str(e)
+                    self.last_error = f"Attempt {attempt + 1}/{max_retries}: {error_msg}"
+                    
+                    # 如果是API Key相关错误，不重试
+                    if any(keyword in error_msg.lower() for keyword in 
+                           ["api key", "authentication", "unauthorized", "forbidden"]):
+                        break
+                    
+                    # 如果不是最后一次尝试，等待后重试
+                    if attempt < max_retries - 1:
+                        time.sleep(2 ** attempt)  # 指数退避
+                        continue
+                
+                # 如果是最后一次尝试失败，尝试fallback到其他provider
+                if attempt == max_retries - 1 and len(self.valid_providers) > 1:
+                    current_provider = use_model.split(":")[0]
+                    fallback_providers = [p for p in self.valid_providers.keys() if p != current_provider]
+                    
+                    for fallback_provider in fallback_providers:
+                        try:
+                            if fallback_provider == "dashscope":
+                                fallback_model = "dashscope:qwen3-max"
+                            elif fallback_provider == "deepseek":
+                                fallback_model = "deepseek:deepseek-chat"
+                            elif fallback_provider == "openai":
+                                fallback_model = "openai:gpt-4"
+                            elif fallback_provider == "anthropic":
+                                fallback_model = "anthropic:claude-3-sonnet"
+                            else:
+                                continue
+                            
+                            kwargs["model"] = fallback_model
+                            resp = self.client.chat.completions.create(**kwargs)
+                            choices = getattr(resp, "choices", [])
+                            if choices:
+                                msg = getattr(choices[0], "message", None)
+                                content = getattr(msg, "content", None) if msg else None
+                                if isinstance(content, str) and content.strip():
+                                    self.last_error = f"Fallback to {fallback_model} succeeded after {use_model} failed"
+                                    return content
+                        except Exception as fallback_error:
+                            self.last_error = f"Fallback to {fallback_provider} also failed: {str(fallback_error)}"
+                            continue
+            
+            return ""
 
-    return AisuiteAdapter(client, default_model)
+    return AisuiteAdapter(client, default_model, valid_providers)
 
 def _print_run_summary(run_log: dict) -> None:
     print("=== Run Summary ===")
@@ -358,20 +497,90 @@ def _save_run_config_snapshot(run_log: dict) -> str | None:
 
 
 def run_nobel_pipeline() -> str:
-    os.makedirs("artifacts/nobel", exist_ok=True)
-    py = sys.executable
-    run_log = {}
-    start = time.time()
-    load_dotenv()
-    force = os.environ.get("NOBEL_FORCE_RECOMPUTE") == "1"
-    # Step 1: Fetch data via LiteratureAgent
-    t0 = time.time()
-    agent = LiteratureAgent(base_dir="artifacts/nobel")
-    task_id = str(int(time.time()))
-    agent_result = agent.handle({"task_id": task_id})
-    src_csv = agent_result["artifacts"]["csv"]
-    default_csv = "artifacts/nobel/laureates_prizes.csv"
-    shutil.copyfile(src_csv, default_csv)
+    """
+    运行Nobel奖数据分析管道，使用统一错误处理
+    
+    Returns:
+        运行日志文件路径
+    """
+    try:
+        os.makedirs("artifacts/nobel", exist_ok=True)
+        py = sys.executable
+        run_log = {}
+        start = time.time()
+        load_dotenv()
+        force = os.environ.get("NOBEL_FORCE_RECOMPUTE") == "1"
+        
+        # Step 1: Fetch data via LiteratureAgent
+        t0 = time.time()
+        try:
+            agent = LiteratureAgent(base_dir="artifacts/nobel")
+            task_id = str(int(time.time()))
+            agent_result = agent.handle({"task_id": task_id})
+            
+            # 验证代理结果
+            if not agent_result or "artifacts" not in agent_result:
+                if ERROR_HANDLING_AVAILABLE:
+                    raise AgentError(
+                        "文献代理执行失败，未返回有效结果",
+                        agent_name="LiteratureAgent",
+                        task_id=task_id,
+                        details={"agent_result": agent_result},
+                        suggestions=[
+                            "检查网络连接是否正常",
+                            "验证数据源是否可访问",
+                            "查看详细日志获取更多信息"
+                        ]
+                    )
+                else:
+                    raise Exception("LiteratureAgent failed to return valid results")
+            
+            src_csv = agent_result["artifacts"]["csv"]
+            default_csv = "artifacts/nobel/laureates_prizes.csv"
+            
+            # 验证CSV文件是否存在
+            if not os.path.exists(src_csv):
+                if ERROR_HANDLING_AVAILABLE:
+                    raise FileIOError(
+                        f"生成的CSV文件不存在: {src_csv}",
+                        file_path=src_csv,
+                        operation="read",
+                        suggestions=[
+                            "检查文献代理是否正确生成了数据文件",
+                            "验证文件路径权限设置"
+                        ]
+                    )
+                else:
+                    raise FileNotFoundError(f"CSV file not found: {src_csv}")
+            
+            shutil.copyfile(src_csv, default_csv)
+            
+        except Exception as e:
+            # 使用统一错误处理
+            if ERROR_HANDLING_AVAILABLE and orchestrator_error_handler:
+                orchestrator_error_handler.handle_error(
+                    e, 
+                    context={
+                        "function": "run_nobel_pipeline", 
+                        "step": "literature_agent",
+                        "task_id": task_id if 'task_id' in locals() else None,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                )
+            raise
+
+    except Exception as e:
+        # 最外层错误处理
+        if ERROR_HANDLING_AVAILABLE and orchestrator_error_handler:
+            orchestrator_error_handler.handle_error(
+                e, 
+                context={
+                    "function": "run_nobel_pipeline", 
+                    "step": "initialization",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        raise
 
     run_log["fetch"] = {
         "returncode": 0,
@@ -396,18 +605,69 @@ def run_nobel_pipeline() -> str:
         os.path.exists(os.path.join(figures_dir, "category_stacked.html")) and
         os.path.exists(draft_analysis_path)
     )
+    
     if need_analysis:
-        p2 = subprocess.run(
-            [py, "src/analysis/nobel_analysis.py", "--csv", src_csv, "--run-dir", run_dir],
-            capture_output=True, text=True,
-        )
-        analysis_rc = p2.returncode
-        analysis_out = p2.stdout
-        analysis_err = p2.stderr
+        try:
+            p2 = subprocess.run(
+                [py, "src/analysis/nobel_analysis.py", "--csv", src_csv, "--run-dir", run_dir],
+                capture_output=True, text=True,
+            )
+            analysis_rc = p2.returncode
+            analysis_out = p2.stdout
+            analysis_err = p2.stderr
+            
+            if analysis_rc != 0:
+                if ERROR_HANDLING_AVAILABLE:
+                    raise DataProcessingError(
+                        f"数据分析步骤失败，返回码: {analysis_rc}",
+                        data_type="nobel_analysis",
+                        details={
+                            "returncode": analysis_rc,
+                            "stdout": analysis_out,
+                            "stderr": analysis_err,
+                            "command": f"{py} src/analysis/nobel_analysis.py --csv {src_csv} --run-dir {run_dir}"
+                        },
+                        suggestions=[
+                            "检查CSV数据格式是否正确",
+                            "验证Python环境和依赖包是否完整",
+                            "查看stderr输出获取具体错误信息"
+                        ]
+                    )
+                else:
+                    raise Exception(f"Analysis failed with return code {analysis_rc}: {analysis_err}")
+                    
+        except subprocess.TimeoutExpired as e:
+            if ERROR_HANDLING_AVAILABLE:
+                raise DataProcessingError(
+                    "数据分析步骤超时",
+                    data_type="nobel_analysis",
+                    details={"timeout": e.timeout, "command": str(e.cmd)},
+                    suggestions=[
+                        "增加超时时间限制",
+                        "检查数据量是否过大",
+                        "优化分析算法性能"
+                    ]
+                )
+            else:
+                raise
+        except Exception as e:
+            if ERROR_HANDLING_AVAILABLE and orchestrator_error_handler:
+                orchestrator_error_handler.handle_error(
+                    e,
+                    context={
+                        "function": "run_nobel_pipeline",
+                        "step": "data_analysis",
+                        "csv_path": src_csv,
+                        "run_dir": run_dir,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                )
+            raise
     else:
         analysis_rc = 0
-        analysis_out = "[cache] analysis skipped (artifacts found)"
+        analysis_out = "Skipped (cached)"
         analysis_err = ""
+        
     run_log["analysis"] = {
         "returncode": analysis_rc,
         "stdout": analysis_out,
