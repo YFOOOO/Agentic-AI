@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# Git pre-commit hook 示例
+# 
+# 安装方法:
+#   cp .githooks/pre-commit .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# 或者配置Git使用这个hooks目录:
+#   git config core.hooksPath .githooks
+#
+
+echo "🔍 运行预提交检查..."
+
+# 运行预提交测试脚本
+python pre_commit_test.py
+
+# 检查退出状态
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ 预提交检查失败!"
+    echo "请修复问题后重新提交。"
+    echo ""
+    echo "跳过检查 (不推荐): git commit --no-verify"
+    exit 1
+fi
+
+echo "✅ 预提交检查通过!"
+exit 0
