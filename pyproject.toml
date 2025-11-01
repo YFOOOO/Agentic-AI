@@ -1,6 +1,17 @@
 [tool.ruff]
 line-length = 127
-exclude = [".git", "__pycache__", ".venv", "venv", "env", "test_output", "outputs", "artifacts/*/runs/*"]
+exclude = [
+  ".git",
+  "__pycache__",
+  ".venv",
+  "venv",
+  "env",
+  "test_output",
+  "outputs",
+  "test_accessibility_figures",
+  "artifacts/*/runs/*",
+  "artifacts/**",
+]
 # Enable a sensible default subset; projects can extend these later
 select = ["E", "F", "W", "C", "B", "I"]
 
@@ -26,3 +37,6 @@ profile = "black"
 [tool.ruff.per-file-ignores]
 # allow test modules to use assert and have looser rules
 "tests/**" = ["D", "S101"]
+
+# if you need to relax lint rules for generated artifact files, prefer using
+# the `exclude` list above; per-file-ignores can be added here when needed.
