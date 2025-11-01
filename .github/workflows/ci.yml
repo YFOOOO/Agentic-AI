@@ -27,8 +27,8 @@ jobs:
 
       - name: Run ruff
         run: |
-          # Check source and tests; exit code preserved so CI fails on lint errors
-          ruff check src tests || exit 0
+          # Fail the job if ruff reports issues
+          ruff check src tests
 
   test:
     name: Test (pytest + coverage)
