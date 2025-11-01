@@ -205,3 +205,21 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Project-specific ignores
+# Runtime logs and outputs
+run_log_*.json
+mcp_result_*.json
+eval_*.json
+*.zip
+
+# Test artifacts and temporary directories
+artifacts/nobel/runs/*/
+artifacts/nobel/test_*/
+outputs/figures/*/
+enhanced_figures/
+
+# Temporary files and directories
+temp/
+tmp/
+.temp/

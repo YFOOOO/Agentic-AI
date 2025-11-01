@@ -35,13 +35,42 @@ def orchestrate_all(args: Dict[str, Any]) -> Dict[str, Any]:
         os.environ["NOBEL_THEME"] = str(args["theme"])
     if "model" in args:
         os.environ["NOBEL_LLM_MODEL"] = str(args["model"])
-    if "temperature" in args and args["temperature"] is not None:
-        os.environ["NOBEL_LLM_TEMPERATURE"] = str(args["temperature"])
-    if "max_tokens" in args and args["max_tokens"] is not None:
-        os.environ["NOBEL_LLM_MAX_TOKENS"] = str(args["max_tokens"])
-    if "thresholds_path" in args and args["thresholds_path"]:
+    # 收紧：temperature 仅接受数值或可解析为数值的字符串
+    if "temperature" in args:
+        val = args["temperature"]
+        if val is not None:
+            if isinstance(val, (int, float)):
+                os.environ["NOBEL_LLM_TEMPERATURE"] = str(val)
+            elif isinstance(val, str):
+                try:
+                    float(val)
+                    os.environ["NOBEL_LLM_TEMPERATURE"] = val
+                except ValueError:
+                    pass  # 非数字字符串不写入
+            else:
+                pass  # 非数值类型不写入
+    # 收紧：max_tokens 仅接受整数或可解析为整数的字符串（不接受 bool / 浮点）
+    if "max_tokens" in args:
+        mt = args["max_tokens"]
+        if mt is not None:
+            if isinstance(mt, bool):
+                pass  # 避免 True/False 作为 1/0
+            elif isinstance(mt, int):
+                os.environ["NOBEL_LLM_MAX_TOKENS"] = str(mt)
+            elif isinstance(mt, str):
+                try:
+                    int(mt)
+                    os.environ["NOBEL_LLM_MAX_TOKENS"] = mt
+                except ValueError:
+                    pass  # 非整数字符串不写入
+            else:
+                pass  # 非数值类型不写入
+    # 修改：仅当 thresholds_path 为非空字符串时写入环境变量
+    if "thresholds_path" in args and isinstance(args["thresholds_path"], str) and args["thresholds_path"]:
         os.environ["NOBEL_EVAL_THRESHOLDS_PATH"] = str(args["thresholds_path"])
-    if args.get("force"):
+    # 收紧：force 仅接受 True、1、"1"
+    val_force = args.get("force", None)
+    if val_force in (True, 1, "1"):
         os.environ["NOBEL_FORCE_RECOMPUTE"] = "1"
 
     # 新增：结构化错误处理
@@ -69,8 +98,23 @@ def orchestrate_all(args: Dict[str, Any]) -> Dict[str, Any]:
             "errors": errors,
         }
 
-    summary = run_log.get("summary", {}) or {}
-    artifacts = summary.get("artifacts", {}) or {}
+    # 新增：对 summary 类型的防御性检查
+    summary_raw = run_log.get("summary", {})
+    if not isinstance(summary_raw, dict):
+        errors.append({"code": "E_LOAD_LOG_FAIL", "message": "Invalid summary in run log"})
+        return {
+            "schema_version": "1.0",
+            "summary": {},
+            "artifacts": {},
+            "errors": errors,
+        }
+    summary = summary_raw
+
+    # 新增：对 artifacts 类型的防御性检查
+    artifacts_raw = summary.get("artifacts", {}) or {}
+    if not isinstance(artifacts_raw, dict):
+        artifacts_raw = {}
+    artifacts = artifacts_raw
 
     return {
         "schema_version": "1.0",
