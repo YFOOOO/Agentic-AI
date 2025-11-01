@@ -369,3 +369,8 @@ benchmark_data/
 user_artifacts/
 personal_outputs/
 custom_templates/
+
+# Local test outputs and generated artifacts that shouldn't be tracked
+test_output/
+outputs/
+test_accessibility_figures/
