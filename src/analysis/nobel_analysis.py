@@ -70,7 +70,7 @@ def write_draft(df: pd.DataFrame, out_path: str):
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Nobel analysis charts and draft")
-    parser.add_argument("--csv", default="artifacts/nobel/laureates_prizes.csv", help="Input CSV path")
+    parser.add_argument("--csv", default="data/nobel/laureates_prizes.csv", help="Input CSV path")
     parser.add_argument("--run-dir", default=None, help="Run directory for outputs (figures/, draft.md)")
     args = parser.parse_args()
 
@@ -79,8 +79,8 @@ def main():
         out_dir = os.path.join(args.run_dir, "figures")
         draft_path = os.path.join(args.run_dir, "draft.md")
     else:
-        out_dir = "artifacts/nobel/figures"
-        draft_path = "artifacts/nobel/draft.md"
+        out_dir = "outputs/figures"
+        draft_path = "docs/reports/draft.md"
 
     os.makedirs(out_dir, exist_ok=True)
 

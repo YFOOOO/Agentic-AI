@@ -62,12 +62,12 @@ def normalize(data: dict) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 def main():
-    os.makedirs("artifacts/nobel", exist_ok=True)
+    os.makedirs("data/nobel", exist_ok=True)
     data = fetch_laureates()
     df = normalize(data)
     df["year"] = pd.to_numeric(df["year"], errors="coerce")
     ts = int(time.time())
-    csv_path = f"artifacts/nobel/laureates_prizes.csv"
+    csv_path = f"data/nobel/laureates_prizes.csv"
     df.to_csv(csv_path, index=False)
     print(f"Saved {len(df)} rows -> {csv_path}")
 

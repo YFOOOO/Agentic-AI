@@ -333,9 +333,9 @@ def _save_run_config_snapshot(run_log: dict) -> str | None:
             "eval_thresholds_source": summary.get("thresholds_source"),
             "eval_thresholds_path": summary.get("artifacts", {}).get("thresholds_path"),
             "env": {
-                "NOBEL_MODEL": os.getenv("NOBEL_MODEL"),
+                "NOBEL_LLM_MODEL": os.getenv("NOBEL_LLM_MODEL"),
                 "NOBEL_LLM_MAX_TOKENS": os.getenv("NOBEL_LLM_MAX_TOKENS"),
-                "NOBEL_TEMPERATURE": os.getenv("NOBEL_TEMPERATURE"),
+                "NOBEL_LLM_TEMPERATURE": os.getenv("NOBEL_LLM_TEMPERATURE"),
                 "NOBEL_THEME": os.getenv("NOBEL_THEME"),
             },
             "secrets_present": {

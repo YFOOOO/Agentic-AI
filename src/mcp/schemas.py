@@ -44,5 +44,7 @@ class Summary(TypedDict, total=False):
     thresholds_source: str
 
 class OrchestrateResult(TypedDict, total=False):
+    schema_version: str
     summary: Summary
-    errors: List[str]
+    artifacts: ArtifactMap
+    errors: List[Dict[str, str]]
