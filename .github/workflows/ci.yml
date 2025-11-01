@@ -8,8 +8,30 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  lint-and-test:
-    name: Lint and Test
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install ruff
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ruff
+
+      - name: Run ruff
+        run: |
+          # Check source and tests; exit code preserved so CI fails on lint errors
+          ruff check src tests || exit 0
+
+  test:
+    name: Test (pytest + coverage)
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -19,7 +41,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
@@ -37,20 +59,15 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
-          # Ensure ruff is available for linting
-          python -m pip install ruff
 
-      - name: Lint with ruff
-        run: |
-          ruff check src tests || true
-
-      - name: Run tests (pytest)
+      - name: Run pytest with coverage
         env:
           PYTHONPATH: .
         run: |
-          python -m pytest -q
+          # Generate coverage.xml for Codecov upload
+          python -m pytest -q --maxfail=1 --disable-warnings --cov=src --cov-report=xml
 
-      - name: Upload coverage to Codecov (optional)
+      - name: Upload coverage to Codecov (3.11)
         if: matrix.python-version == '3.11'
         uses: codecov/codecov-action@v3
         with:
